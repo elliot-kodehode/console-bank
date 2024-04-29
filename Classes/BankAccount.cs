@@ -4,36 +4,31 @@ public class BankAccount
 {
     // Properties
 
-    private static int s_accountNumberSeed = 123456789;
+    private static int _sAccountNumberSeed = 123456789;
     public string Number { get; }
-    public string Owner { get; }
+    public string? Owner { get; }
 
     public decimal Balance
     {
         get
         {
-            decimal balance = 0;
             // Adds or removes from balance depending on value it gets
-            foreach (var item in _allTransactions)
-            {
-                balance += item.Amount;
-            }
-            return balance;
+            return _allTransactions.Sum(item => item.Amount);
         }
     }
 
     // Constructor
-    public BankAccount(string name, decimal initialBalance)
+    public BankAccount(string? name, decimal initialBalance)
     {
         Owner = name;
-        Number = s_accountNumberSeed.ToString();
-        s_accountNumberSeed++;
+        Number = _sAccountNumberSeed.ToString();
+        _sAccountNumberSeed++;
         // Initial balance when creating the account
         MakeDeposit(initialBalance, DateTime.Now, "Initial balance");
     }
     
     // Initialises the List of transactions
-    private readonly List<Transaction> _allTransactions = new List<Transaction>();
+    private readonly List<Transaction> _allTransactions = [];
 
     // Methods
     public void MakeDeposit(decimal amount, DateTime date, string note)
@@ -63,6 +58,31 @@ public class BankAccount
         _allTransactions.Add(withdrawal);
     }
 
+    public static BankAccount NewAccount()
+    {
+        string? owner;
+        do
+        { 
+            Console.WriteLine("Enter name:");
+            owner = Console.ReadLine();
+
+            if (string.IsNullOrWhiteSpace(owner))
+            { 
+                Console.WriteLine("Name cannot be empty. Enter a valid name.");
+                
+            }
+        } while (string.IsNullOrWhiteSpace(owner));
+        
+        Console.WriteLine("Deposit initial balance:");
+        decimal initialBalance;
+        while (!decimal.TryParse(Console.ReadLine(), out initialBalance) || initialBalance <= 0)
+        {
+            Console.WriteLine("Invalid input. Please enter a valid amount.");
+        }
+
+        Console.WriteLine($"Account {_sAccountNumberSeed} was created for {owner} with {initialBalance} initial balance");
+        return new BankAccount(owner, initialBalance);
+    }
     public string GetAccountHistory()
     {
         // StringBuilder makes multiple lines of code
@@ -70,6 +90,7 @@ public class BankAccount
 
         decimal balance = 0;
         report.AppendLine("Date\t\tAmount\tBalance\tNote");
+        Console.WriteLine($"History for account number {_sAccountNumberSeed}");
         foreach (var item in _allTransactions)
         {
             balance += item.Amount;
